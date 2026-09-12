@@ -7,6 +7,10 @@ import "strings"
 
 func findTrieNode(node *Node, value Node) *Node {
 
+	if node.Type == value.Type && node.Address == value.Address && node.Prefix == value.Prefix {
+		return node
+	}
+
 	var result *Node = nil
 
 	if node.ContainsNode(value) {
@@ -91,39 +95,54 @@ func (trie *Trie) Insert(value string) bool {
 
 }
 
+func insertTrieNode(root *Node, node Node) bool {
+
+	var result bool = false
+
+	parent := findTrieNode(root, node)
+
+	if parent != nil {
+
+		if node.Prefix > parent.Prefix {
+
+			children := make([]*Node, 0)
+			kept := make([]*Node, 0)
+
+			for c := 0; c < len(parent.Children); c++ {
+
+				child := parent.Children[c]
+
+				if node.ContainsNode(*child) {
+					children = append(children, child)
+				} else {
+					kept = append(kept, child)
+				}
+
+			}
+
+			node.Children = children
+			parent.Children = kept
+			parent.Children = append(parent.Children, &node)
+
+			result = true
+
+		}
+
+	}
+
+	return result
+
+}
+
 func (trie *Trie) InsertNode(value Node) bool {
 
 	var result bool = false
 	var node = value
 
 	if node.Type == "ipv6" {
-
-		parent := findTrieNode(trie.Rootv6, node)
-
-		if parent != nil {
-
-			if node.Prefix > parent.Prefix {
-				parent.Children = append(parent.Children, &node)
-			}
-
-			result = true
-
-		}
-
+		result = insertTrieNode(trie.Rootv6, node)
 	} else if node.Type == "ipv4" {
-
-		parent := findTrieNode(trie.Rootv4, node)
-
-		if parent != nil {
-
-			if node.Prefix > parent.Prefix {
-				parent.Children = append(parent.Children, &node)
-			}
-
-			result = true
-
-		}
-
+		result = insertTrieNode(trie.Rootv4, node)
 	}
 
 	return result
