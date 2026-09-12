@@ -1,3 +1,3 @@
-module github.com/cookiengineer/lpm
+module github.com/cookiengineer/golpm
 
-go 1.22.0
+go 1.27.0
